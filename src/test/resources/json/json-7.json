@@ -1,0 +1,45 @@
+{
+  "_id": "5aeda580af2eab6bed03f069",
+  "index": 0,
+  "guid": "4862706a-be3c-49d6-b9b9-d4f351ff17e3",
+  "isActive": true,
+  "balance": "$2,565.67",
+  "picture": "http://placehold.it/32x32",
+  "age": 39,
+  "eyeColor": "green",
+  "name": "Raymond Leblanc",
+  "gender": "male",
+  "company": "AMTAP",
+  "email": "raymondleblanc@amtap.com",
+  "phone": "+1 (909) 535-2438",
+  "address": "546 Fleet Walk, Hegins, Alabama, 4440",
+  "about": "Ex eu qui est eiusmod aute officia eiusmod fugiat et sit quis ipsum pariatur. Incididunt adipisicing sunt cupidatat reprehenderit sint adipisicing elit adipisicing eiusmod aute laborum. Velit deserunt reprehenderit irure nisi sit eiusmod adipisicing reprehenderit Lorem.",
+  "registered": "2017-05-21T07:02:54 -01:00",
+  "latitude": -40.151031,
+  "longitude": 1.240083,
+  "tags": [
+    "sit",
+    "enim",
+    "consequat",
+    "voluptate",
+    "ex",
+    "ut",
+    "ullamco"
+  ],
+  "friends": [
+    {
+      "id": 0,
+      "name": "Sykes Bird"
+    },
+    {
+      "id": 1,
+      "name": "Barnett Wilkins"
+    },
+    {
+      "id": 2,
+      "name": "Erin Mendoza"
+    }
+  ],
+  "greeting": "Hello, Raymond Leblanc! You have 2 unread messages.",
+  "favoriteFruit": "strawberry"
+}

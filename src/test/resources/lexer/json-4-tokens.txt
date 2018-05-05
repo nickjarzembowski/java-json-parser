@@ -1,0 +1,1 @@
+OBJ_OPEN, KEY, "first", VAL, "nick", VAL_END, OBJ_CLOSE
