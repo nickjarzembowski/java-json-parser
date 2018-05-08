@@ -1,8 +1,6 @@
 package json.domain;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,20 +22,6 @@ public class JsonNode {
         this.parent = parent;
     }
     
-    public void addToMap(String key, Object value) {
-        key = key.replace("\"","");
-        lastKey = key;
-        map.put(key,value);
-    }
-    
-    public JsonNode getNode(String key){
-        if (map.containsKey(key) && map.get(key) instanceof JsonNode) {
-            return (JsonNode) map.get(key);
-        } else {
-            return null;
-        }
-    }
-    
     public String getKey(){
         return lastKey;
     }
@@ -54,6 +38,14 @@ public class JsonNode {
             }
         }
         return true;
+    }
+    
+    public JsonNode getNode(String key){
+        if (map.containsKey(key) && map.get(key) instanceof JsonNode) {
+            return (JsonNode) map.get(key);
+        } else {
+            return null;
+        }
     }
     
     public String getString(String key){
@@ -88,20 +80,38 @@ public class JsonNode {
         }
     }
     
+    public void addToMap(String key, Object value) {
+        key = key.replace("\"","");
+        lastKey = key;
+        map.put(key,value);
+    }
+    
     public void addToMap(Object node) {
         map.put(lastKey, node);
+    }
+    
+    public void addValue(Object o) {
+        if (list.isEmpty() && !lastKey.isEmpty()) {
+            map.put(lastKey, o);
+        } else {
+            list.add(o);
+        }
     }
     
     public void addChild(JsonNode node) {
         children.add(node);
     }
     
+    public void addToList(Object o) {
+        list.add(o);
+    }
+    
     public List<JsonNode> getChildren() {
         return children;
     }
     
-    public void addToList(Object o) {
-        list.add(o);
+    public NodeList getNodeList() {
+        return new NodeList(list);
     }
     
     public List<Integer> getIntegerList() {
@@ -116,16 +126,8 @@ public class JsonNode {
         return l;
     }
     
-    public NodeList getNodeList() {
-        return new NodeList(list);
-    }
-    
-    public void addValue(Object o) {
-        if (list.isEmpty() && !lastKey.isEmpty()) {
-            map.put(lastKey, o);
-        } else {
-            list.add(o);
-        }
+    public int getTotalKeys() {
+        return map.size();
     }
     
     @Override public String toString() {
@@ -138,11 +140,10 @@ public class JsonNode {
     /**
      * Represents the list of objects contained within a node.
      * Used via the helper method getList in JsonNode.
-     * Extends get methods in list interface for accessing list in json node.
+     * Extends getFromFile methods in list interface for accessing list in json node.
      */
     public class NodeList {
         public List<Object> list = new ArrayList<>();
-        
         public NodeList(final List<Object> list) {
             this.list = list;
         }
@@ -158,11 +159,6 @@ public class JsonNode {
         public String getString(int i) {
             return String.valueOf(list.get(i));
         }
-        public String toString(int i) {
-            return (String) list.get(i);
-        }
     }
     
 }
-
-

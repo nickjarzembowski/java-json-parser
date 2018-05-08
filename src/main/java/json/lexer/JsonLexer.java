@@ -4,30 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import json.util.SubstringExtractor;
+import json.lexer.domain.LexerState;
+import json.lexer.domain.LexerToken;
+import json.util.SubstringExtractorUtil;
 
 public class JsonLexer {
-    
-    public enum LexerState {
-        OBJ_OPEN,
-        OBJ_PAIR_CLOSE,
-        MEMBERS,
-        PAIR,
-        VALUE,
-        PAIR_STRING,
-        PAIR_VALUE_1,
-        PAIR_VALUE_2,
-        PAIR_VALUE_3,
-        ARRAY_OPEN,
-        ELEMENTS,
-        ARRAY_CLOSE,
-        ARRAY_VALUE,
-        ERROR
-    }
-    
-    public JsonLexer() {}
     
     static String lower = IntStream.rangeClosed('a', 'z').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
     static String upper = IntStream.rangeClosed('A', 'Z').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
@@ -36,80 +18,8 @@ public class JsonLexer {
     static String alphabet = lower.concat(upper).concat(digits).concat(chars);
     static LexerState[][] table;
     
-    /**
-     * Builds the table which maps a Character and LexerState to a new LexerState.
-     */
-    private void init() {
-        int totalStates = LexerState.values().length;
-        int totalActions = alphabet.length();
-        
-        table = new LexerState[totalStates][totalActions];
-        
-        initTableToError(table,totalActions);
-        
-        updateCell(table, '{', LexerState.OBJ_OPEN, LexerState.MEMBERS, alphabet);
-        updateCell(table, '}', LexerState.OBJ_OPEN, LexerState.OBJ_PAIR_CLOSE, alphabet);
-        
-        updateCell(table, '}', LexerState.OBJ_PAIR_CLOSE, LexerState.OBJ_PAIR_CLOSE, alphabet);
-        updateCell(table, ',', LexerState.OBJ_PAIR_CLOSE, LexerState.MEMBERS, alphabet);
-        updateCell(table, ']', LexerState.OBJ_PAIR_CLOSE, LexerState.ARRAY_CLOSE, alphabet);
-        
-        updateCell(table, '{', LexerState.MEMBERS, LexerState.OBJ_OPEN, alphabet);
-        updateCell(table, ',', LexerState.MEMBERS, LexerState.ELEMENTS, alphabet);
-        updateCell(table, '[', LexerState.MEMBERS, LexerState.ARRAY_OPEN, alphabet);
-        updateCell(table, ']', LexerState.MEMBERS, LexerState.ARRAY_CLOSE, alphabet);
-        fillAlphaNumeric(table, LexerState.MEMBERS, LexerState.PAIR);
-        updateCell(table, '\"', LexerState.MEMBERS, LexerState.PAIR, alphabet);
-        
-        updateCell(table, ',', LexerState.PAIR, LexerState.PAIR, alphabet);
-        fillAlphaNumeric(table, LexerState.PAIR, LexerState.VALUE);
-        updateCell(table, '\"', LexerState.PAIR, LexerState.VALUE, alphabet);
-        
-        fillAlphaNumeric(table, LexerState.VALUE, LexerState.PAIR_VALUE_1);
-        updateCell(table, '\"', LexerState.VALUE, LexerState.PAIR_STRING, alphabet);
-        
-        updateCell(table, ':', LexerState.PAIR_STRING, LexerState.PAIR_VALUE_1, alphabet);
-        updateCell(table, '\"', LexerState.PAIR_STRING, LexerState.PAIR_STRING, alphabet);
-        updateCell(table, '_', LexerState.PAIR_STRING, LexerState.PAIR_STRING, alphabet); //
-        updateCell(table, ' ', LexerState.PAIR_STRING, LexerState.PAIR_STRING, alphabet); //
-        fillAlphaNumeric(table, LexerState.PAIR_STRING, LexerState.PAIR_STRING);
-        
-        updateCell(table, '{', LexerState.PAIR_VALUE_1, LexerState.OBJ_OPEN, alphabet);
-        updateCell(table, '[', LexerState.PAIR_VALUE_1, LexerState.ARRAY_OPEN, alphabet);
-        updateCell(table, '\"', LexerState.PAIR_VALUE_1, LexerState.PAIR_VALUE_3, alphabet);
-        updateCell(table, '-', LexerState.PAIR_VALUE_1, LexerState.PAIR_VALUE_2, alphabet);
-        fillAlphaNumeric(table, LexerState.PAIR_VALUE_1, LexerState.PAIR_VALUE_2);
-        
-        updateCell(table, '}', LexerState.PAIR_VALUE_2, LexerState.OBJ_PAIR_CLOSE, alphabet);
-        updateCell(table, ',', LexerState.PAIR_VALUE_2, LexerState.MEMBERS, alphabet);
-        updateCell(table, '[', LexerState.PAIR_VALUE_2, LexerState.ARRAY_OPEN, alphabet);
-        updateCell(table, ']', LexerState.PAIR_VALUE_2, LexerState.ARRAY_CLOSE, alphabet);
-        updateBatchCells(table, "\"-$./:@+()\\!", LexerState.PAIR_VALUE_2, LexerState.PAIR_VALUE_2, alphabet);
-        fillAlphaNumeric(table, LexerState.PAIR_VALUE_2, LexerState.PAIR_VALUE_2);
-        
-        updateCell(table, '\"', LexerState.PAIR_VALUE_3, LexerState.PAIR_VALUE_2, alphabet);
-        fillAlphaNumeric(table, LexerState.PAIR_VALUE_3, LexerState.PAIR_VALUE_3);
-        updateBatchCells(table, ",-$./:@+()\\!", LexerState.PAIR_VALUE_3, LexerState.PAIR_VALUE_3, alphabet);
-        
-        updateCell(table, '{', LexerState.ARRAY_OPEN, LexerState.OBJ_OPEN, alphabet);
-        updateCell(table, '[', LexerState.ARRAY_OPEN, LexerState.ELEMENTS, alphabet);
-        updateCell(table, ']', LexerState.ARRAY_OPEN, LexerState.ARRAY_CLOSE, alphabet);
-        updateCell(table, '\"', LexerState.ARRAY_OPEN, LexerState.ELEMENTS, alphabet); //
-        fillAlphaNumeric(table, LexerState.ARRAY_OPEN, LexerState.ARRAY_VALUE);
-        
-        updateCell(table, '[', LexerState.ELEMENTS, LexerState.ARRAY_OPEN, alphabet);
-        updateCell(table, '{', LexerState.ELEMENTS, LexerState.OBJ_OPEN, alphabet);
-        updateCell(table, '\"', LexerState.ELEMENTS, LexerState.ARRAY_VALUE, alphabet); //
-        fillAlphaNumeric(table, LexerState.ELEMENTS, LexerState.ARRAY_VALUE);
-        
-        updateCell(table, '}', LexerState.ARRAY_CLOSE, LexerState.OBJ_PAIR_CLOSE, alphabet);
-        updateCell(table, ',', LexerState.ARRAY_CLOSE, LexerState.PAIR, alphabet);
-        updateCell(table, ']', LexerState.ARRAY_CLOSE, LexerState.ARRAY_CLOSE, alphabet);
-        
-        updateCell(table, ',', LexerState.ARRAY_VALUE, LexerState.ELEMENTS, alphabet);
-        updateCell(table, ']', LexerState.ARRAY_VALUE, LexerState.ARRAY_CLOSE, alphabet);
-        updateCell(table, '\"', LexerState.ARRAY_VALUE, LexerState.ARRAY_VALUE, alphabet);
-        fillAlphaNumeric(table, LexerState.ARRAY_VALUE, LexerState.ARRAY_VALUE);
+    public JsonLexer() {
+        table = new JsonLexerTable().init();
     }
     
     public List<String> lex(String input) throws Exception {
@@ -117,9 +27,8 @@ public class JsonLexer {
     }
     
     public List<String> lex(String input, boolean verbose) throws Exception {
-        init();
         List<String> lexed = new ArrayList<>();
-        SubstringExtractor extractor = new SubstringExtractor();
+        SubstringExtractorUtil extractor = new SubstringExtractorUtil();
         char currentChar;
         LexerState lastLexerState;
         LexerState currentLexerState = input.charAt(0) == '{' ? LexerState.OBJ_OPEN : LexerState.ELEMENTS;
@@ -163,20 +72,19 @@ public class JsonLexer {
     }
     
     private String extractShape(LexerState currentLexerState) {
-        String result = "";
         if (currentLexerState.equals(LexerState.OBJ_OPEN)) {
-            result = "OBJ_OPEN";
+            return LexerToken.OBJ_OPEN.toString();
         } else if (currentLexerState.equals(LexerState.OBJ_PAIR_CLOSE)) {
-            result = "OBJ_CLOSE";
+            return LexerToken.OBJ_CLOSE.toString();
         } else if (currentLexerState.equals(LexerState.ARRAY_OPEN)) {
-            result = "ARR_OPEN";
+            return LexerToken.ARR_OPEN.toString();
         } else if (currentLexerState.equals(LexerState.ARRAY_CLOSE)) {
-            result = "ARR_CLOSE";
+            return LexerToken.ARR_CLOSE.toString();
         }
-        return result;
+        return "";
     }
     
-    private String extractValue(SubstringExtractor extractor,
+    private String extractValue(SubstringExtractorUtil extractor,
         int idx,
         LexerState currentLexerState,
         LexerState lastLexerState,
@@ -195,13 +103,13 @@ public class JsonLexer {
             if (currentLexerState.equals(LexerState.ELEMENTS) && lastLexerState.equals(LexerState.ARRAY_VALUE)
                 || currentLexerState.equals(LexerState.ARRAY_CLOSE) && lastLexerState.equals(LexerState.ARRAY_VALUE)
                 ) {
-                result = "ARR_VAL " + extractor.getSubString(json).trim() + " ARR_VAL_END";
-                tokens.add("ARR_VAL");
+                result = LexerToken.ARR_VAL + extractor.getSubString(json).trim() + LexerToken.ARR_VAL_END;
+                tokens.add(LexerToken.ARR_VAL.toString());
                 tokens.add( extractor.getSubString(json).trim().replace("\"",""));
-                tokens.add("ARR_VAL_END");
+                tokens.add(LexerToken.ARR_VAL_END.toString());
             } else {
-                result = "KEY " + extractor.getSubString(json).trim();
-                tokens.add("KEY");
+                result = LexerToken.KEY + " " + extractor.getSubString(json).trim();
+                tokens.add(LexerToken.KEY.toString());
                 tokens.add( extractor.getSubString(json).trim());
             }
             extractor.reset();
@@ -214,10 +122,10 @@ public class JsonLexer {
         if (lastLexerState.equals(LexerState.PAIR_VALUE_2) && !currentLexerState.equals(LexerState.PAIR_VALUE_2)
             || currentLexerState.equals(LexerState.PAIR) && lastLexerState.equals(LexerState.ARRAY_VALUE)) {
             extractor.setY(idx);
-            result = "VAL " + extractor.getSubString(json).trim() + " VAL_END";
-            tokens.add("VAL");
+            result = LexerToken.VAL + " " + extractor.getSubString(json).trim() + " " + LexerToken.VAL_END;
+            tokens.add(LexerToken.VAL.toString());
             tokens.add( extractor.getSubString(json).trim());
-            tokens.add("VAL_END");
+            tokens.add(LexerToken.VAL_END.toString());
             extractor.reset();
         }
         return result + " ";
@@ -236,33 +144,7 @@ public class JsonLexer {
             || nextLexerState.equals(LexerState.ARRAY_VALUE) && lastLexerState.equals(LexerState.ARRAY_OPEN)
             || nextLexerState.equals(LexerState.OBJ_OPEN) && lastLexerState.equals(LexerState.ARRAY_OPEN)
             || nextLexerState.equals(LexerState.ELEMENTS) && lastLexerState.equals(LexerState.ARRAY_OPEN)
-            || nextLexerState.equals(LexerState.OBJ_OPEN) && lastLexerState.equals(LexerState.PAIR_VALUE_1)
-            ;
-    }
-    
-    private void initTableToError(LexerState[][] table, int totalActions) {
-        Stream.of(LexerState.values()).forEach(lexerState -> fillRow(table,totalActions, lexerState, LexerState.ERROR));
-    }
-    
-    private void fillAlphaNumeric(LexerState[][] table, LexerState lexerState, LexerState newLexerState) {
-        fillRange(table, alphabet.indexOf('a'), alphabet.indexOf('9'), lexerState, newLexerState);
-    }
-    
-    private void updateBatchCells(LexerState[][] table, String str, LexerState lexerState, LexerState toLexerState, String alphabet) {
-        IntStream.range(0, str.length()).forEach(i ->updateCell(table, str.charAt(i), lexerState, toLexerState, alphabet));
-    }
-    
-    private void updateCell(LexerState[][] table, char c, LexerState lexerState, LexerState toLexerState, String alphabet) {
-        int idx = alphabet.indexOf(c);
-        table[lexerState.ordinal()][idx] = toLexerState;
-    }
-    
-    private void fillRow(LexerState[][] table, int totalActions, LexerState lexerState, LexerState toLexerState) {
-        IntStream.range(0, totalActions).forEach(i -> table[lexerState.ordinal()][i] = toLexerState);
-    }
-    
-    private void fillRange(LexerState[][] table, int x, int y, LexerState lexerState, LexerState toLexerState) {
-        IntStream.range(x, y+1).forEach(i -> table[lexerState.ordinal()][i] = toLexerState); // exclusive
+            || nextLexerState.equals(LexerState.OBJ_OPEN) && lastLexerState.equals(LexerState.PAIR_VALUE_1);
     }
     
 }

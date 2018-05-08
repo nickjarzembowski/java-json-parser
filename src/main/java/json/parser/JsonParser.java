@@ -14,7 +14,7 @@ public class JsonParser {
         Stack<JsonNode> stack = new Stack();
         JsonNode rootNode = new JsonNode(null);
         stack.push(rootNode);
-        JsonNode parsedJsonRootNode = parseRecursive(tokens, 0, rootNode, stack);
+        JsonNode parsedJsonRootNode = parse(tokens, 0, rootNode, stack);
         return new JsonTree(parsedJsonRootNode);
     }
     
@@ -26,7 +26,7 @@ public class JsonParser {
      * @param stack the stack frame stack
      * @return
      */
-    private JsonNode parseRecursive(List<String> tokens, int i, JsonNode n, Stack<JsonNode> stack) {
+    private JsonNode parse(List<String> tokens, int i, JsonNode n, Stack<JsonNode> stack) {
         if (i == tokens.size()) return stack.pop();
         String value = tokens.get(i++);
         
@@ -68,7 +68,7 @@ public class JsonParser {
                 n.addToMap(v);
             }
         }
-        return parseRecursive(tokens, i, n, stack);
+        return parse(tokens, i, n, stack);
     }
     
 }

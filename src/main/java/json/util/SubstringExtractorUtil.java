@@ -3,7 +3,7 @@ package json.util;
 /**
  * Utility class for extracting substrings from a stream of characters.
  */
-public class SubstringExtractor {
+public class SubstringExtractorUtil {
     
     private int x = Integer.MAX_VALUE;
     private int y = Integer.MAX_VALUE;

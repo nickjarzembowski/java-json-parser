@@ -17,10 +17,20 @@ public class Json {
         fileUtil = new FileUtil();
     }
     
-    public JsonTree get(String fileName) {
+    public JsonTree getFromFile(String fileName) {
         JsonTree tree = null;
         try {
             tree = parser.parse(lexer.lex(fileUtil.getFileAsString(fileName)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tree;
+    }
+    
+    public JsonTree getFromString(String json) {
+        JsonTree tree = null;
+        try {
+            tree = parser.parse(lexer.lex(json));
         } catch (Exception e) {
             e.printStackTrace();
         }
