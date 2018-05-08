@@ -5,16 +5,18 @@ import java.util.List;
 /**
  * Contains the root node of a json tree
  */
-public class JsonTree {
+public class Json {
     
     private final JsonNode root;
     
-    public JsonTree(final JsonNode root) {
+    public Json(final JsonNode root) {
         this.root = root;
     }
     public JsonNode getRoot() { return root.getChildren().get(0); }
     
     public JsonNode getNode(String key) { return getRoot().getNode(key); }
+    
+    public JsonNode.NodeList  getNodeList() { return getRoot().getNodeList(); }
     
     public JsonNode.NodeList getNodeList(String key) { return getRoot().getNode(key).getNodeList(); }
     

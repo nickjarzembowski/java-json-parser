@@ -64,7 +64,7 @@ public class JsonLexerTable {
         updateCell(table, ',', LexerState.PAIR_VALUE_2, LexerState.MEMBERS, alphabet);
         updateCell(table, '[', LexerState.PAIR_VALUE_2, LexerState.ARRAY_OPEN, alphabet);
         updateCell(table, ']', LexerState.PAIR_VALUE_2, LexerState.ARRAY_CLOSE, alphabet);
-        updateBatchCells(table, "\"-$./:@+()\\!", LexerState.PAIR_VALUE_2, LexerState.PAIR_VALUE_2, alphabet);
+        updateBatchCells(table, "\"-$./@+()\\!", LexerState.PAIR_VALUE_2, LexerState.PAIR_VALUE_2, alphabet);
         fillAlphaNumeric(table, LexerState.PAIR_VALUE_2, LexerState.PAIR_VALUE_2);
         
         updateCell(table, '\"', LexerState.PAIR_VALUE_3, LexerState.PAIR_VALUE_2, alphabet);

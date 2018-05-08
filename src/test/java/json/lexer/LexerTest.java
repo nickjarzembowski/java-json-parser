@@ -28,15 +28,15 @@ public class LexerTest {
             { "/json/json-6.json", "/lexer/json-6-tokens.txt" }
         });
     }
-    
+
     private String input;
     private String expected;
-    
+
     public LexerTest(String input, String expected) {
         this.input = input;
         this.expected = expected;
     }
-    
+
     @Test
     public void test() throws Exception {
         assertEquals(fileUtil.getTokens(expected), lexer.lex(fileUtil.getFileAsString(input)));

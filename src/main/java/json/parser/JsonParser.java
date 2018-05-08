@@ -4,19 +4,17 @@ import java.util.List;
 import java.util.Stack;
 
 import json.domain.JsonNode;
-import json.domain.JsonTree;
+import json.domain.Json;
 import json.lexer.domain.LexerToken;
 
 public class JsonParser {
     
-    public static void main(String... args) {}
-    
-    public JsonTree parse(List<String> tokens) {
+    public Json parse(List<String> tokens) {
         Stack<JsonNode> stack = new Stack();
         JsonNode rootNode = new JsonNode(null);
         stack.push(rootNode);
         JsonNode parsedJsonRootNode = parse(tokens, 0, rootNode, stack);
-        return new JsonTree(parsedJsonRootNode);
+        return new Json(parsedJsonRootNode);
     }
     
     /**

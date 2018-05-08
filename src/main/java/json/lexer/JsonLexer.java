@@ -54,6 +54,7 @@ public class JsonLexer {
                 if (doesStateTransitionRequireStepBack(currentLexerState, lastLexerState)) i--;
                 if (currentLexerState.equals(LexerState.ERROR)) {
                     System.out.println(("Failed to parse json. Error at: " + input.substring(0, i) + " in " + input));
+                    break;
                 }
             }
             if (currentLexerState.equals(LexerState.OBJ_PAIR_CLOSE) || currentLexerState.equals(LexerState.ARRAY_CLOSE)) {
