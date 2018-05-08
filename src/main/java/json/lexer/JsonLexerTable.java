@@ -8,12 +8,13 @@ import json.lexer.domain.LexerState;
 
 public class JsonLexerTable {
     
-    static String lower = IntStream.rangeClosed('a', 'z').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
-    static String upper = IntStream.rangeClosed('A', 'Z').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
-    static String digits = IntStream.rangeClosed('0', '9').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
-    static String chars = "{},:[]\" _-$./@+()\\!";
-    static String alphabet = lower.concat(upper).concat(digits).concat(chars);
-    static LexerState[][] table;
+    private LexerState[][] table;
+    
+    public String lower = IntStream.rangeClosed('a', 'z').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
+    public String upper = IntStream.rangeClosed('A', 'Z').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
+    public String digits = IntStream.rangeClosed('0', '9').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
+    public String chars = "{},:[]\" _-$./@+()\\!";
+    public String alphabet = lower.concat(upper).concat(digits).concat(chars);
     
     /**
      * Builds the table which maps a Character and LexerState to a new LexerState.
@@ -92,7 +93,6 @@ public class JsonLexerTable {
         
         return table;
     }
-    
     
     private void initTableToError(LexerState[][] table, int totalActions) {
         Stream.of(LexerState.values()).forEach(lexerState -> fillRow(table,totalActions, lexerState, LexerState.ERROR));

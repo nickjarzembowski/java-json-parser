@@ -2,8 +2,6 @@ package json.lexer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import json.lexer.domain.LexerState;
 import json.lexer.domain.LexerToken;
@@ -11,34 +9,34 @@ import json.util.SubstringExtractorUtil;
 
 public class JsonLexer {
     
-    static String lower = IntStream.rangeClosed('a', 'z').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
-    static String upper = IntStream.rangeClosed('A', 'Z').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
-    static String digits = IntStream.rangeClosed('0', '9').mapToObj(c -> "" + (char) c).collect(Collectors.joining());
-    static String chars = "{},:[]\" _-$./@+()\\!";
-    static String alphabet = lower.concat(upper).concat(digits).concat(chars);
-    static LexerState[][] table;
+    private String alphabet;
+    private LexerState[][] table;
     
     public JsonLexer() {
-        table = new JsonLexerTable().init();
+        JsonLexerTable lexerTable = new JsonLexerTable();
+        table = lexerTable.init();
+        alphabet = lexerTable.alphabet;
     }
     
-    public List<String> lex(String input) throws Exception {
+    public List<String> lex(String input) {
         return lex(input,false);
     }
     
-    public List<String> lex(String input, boolean verbose) throws Exception {
-        List<String> lexed = new ArrayList<>();
+    public List<String> lex(String input, boolean log) {
+        
         SubstringExtractorUtil extractor = new SubstringExtractorUtil();
+        List<String> lexed = new ArrayList<>();
         char currentChar;
         LexerState lastLexerState;
         LexerState currentLexerState = input.charAt(0) == '{' ? LexerState.OBJ_OPEN : LexerState.ELEMENTS;
         int index = 0;
+        
         try {
             for (int i = 0; i < input.length(); i++) {
                 index = i;
                 currentChar = input.charAt(index);
                 if (currentChar == ' ' || currentChar == '\n') continue;
-                if (verbose) System.out.println(String.format("1: LexerState = %s | char = %s", currentLexerState, currentChar));
+                if (log) System.out.println(String.format("1: LexerState = %s | char = %s", currentLexerState, currentChar));
                 
                 int actionIdx = alphabet.indexOf(currentChar);
                 int stateIdx = currentLexerState.ordinal();
@@ -46,40 +44,40 @@ public class JsonLexer {
                 currentLexerState = table[stateIdx][actionIdx];
                 
                 String extracted = extractValue(extractor, i, currentLexerState, lastLexerState, input, lexed);
-                if (!extracted.trim().isEmpty() && verbose) System.out.println(extracted);
+                if (!extracted.trim().isEmpty() && log) System.out.println(extracted);
                 
                 String extractedShape = extractShape(lastLexerState);
                 if (!extractedShape.isEmpty()) {
                     lexed.add(extractedShape);
-                    if (verbose) System.out.println(extractedShape);
+                    if (log) System.out.println(extractedShape);
                 }
                 if (doesStateTransitionRequireStepBack(currentLexerState, lastLexerState)) i--;
                 if (currentLexerState.equals(LexerState.ERROR)) {
-                    throw new Exception("Failed to parse json. Error at: " + input.substring(0, i) + " in " + input);
+                    System.out.println(("Failed to parse json. Error at: " + input.substring(0, i) + " in " + input));
                 }
             }
             if (currentLexerState.equals(LexerState.OBJ_PAIR_CLOSE) || currentLexerState.equals(LexerState.ARRAY_CLOSE)) {
                 lexed.add(extractShape(currentLexerState).trim());
             } else {
-                throw new Exception("Invalid json character at index " + index + " in " + input + "");
+                System.out.println("Invalid json character at index " + index + " in " + input + "");
             }
-            if (verbose) System.out.println(currentLexerState.equals(LexerState.OBJ_PAIR_CLOSE));
-            
-            return lexed;
+            if (log) System.out.println(currentLexerState.equals(LexerState.OBJ_PAIR_CLOSE));
         } catch (Exception e) {
-            throw new Exception("Lexing failed.", e);
+            System.out.println("Lexing failed. " + e);
         }
+        
+        return lexed;
     }
     
     private String extractShape(LexerState currentLexerState) {
         if (currentLexerState.equals(LexerState.OBJ_OPEN)) {
-            return LexerToken.OBJ_OPEN.toString();
+            return LexerToken.OBJ_OPEN.name();
         } else if (currentLexerState.equals(LexerState.OBJ_PAIR_CLOSE)) {
-            return LexerToken.OBJ_CLOSE.toString();
+            return LexerToken.OBJ_CLOSE.name();
         } else if (currentLexerState.equals(LexerState.ARRAY_OPEN)) {
-            return LexerToken.ARR_OPEN.toString();
+            return LexerToken.ARR_OPEN.name();
         } else if (currentLexerState.equals(LexerState.ARRAY_CLOSE)) {
-            return LexerToken.ARR_CLOSE.toString();
+            return LexerToken.ARR_CLOSE.name();
         }
         return "";
     }
@@ -89,7 +87,8 @@ public class JsonLexer {
         LexerState currentLexerState,
         LexerState lastLexerState,
         String json,
-        List<String> tokens) {
+        List<String> tokens
+    ) {
         String result = "";
         if (currentLexerState.equals(LexerState.PAIR_STRING)) {
             extractor.setX(idx);
@@ -97,19 +96,19 @@ public class JsonLexer {
         if (currentLexerState.equals(LexerState.PAIR_VALUE_1) && lastLexerState.equals(LexerState.PAIR_STRING)
             || currentLexerState.equals(LexerState.ARRAY_OPEN) && lastLexerState.equals(LexerState.ARRAY_VALUE)
             || currentLexerState.equals(LexerState.ELEMENTS) && lastLexerState.equals(LexerState.ARRAY_VALUE)
-            || currentLexerState.equals(LexerState.ARRAY_CLOSE) && lastLexerState.equals(LexerState.ARRAY_VALUE)
-            ) {
+            || currentLexerState.equals(LexerState.ARRAY_CLOSE) && lastLexerState.equals(LexerState.ARRAY_VALUE)) {
+            
             extractor.setY(idx);
             if (currentLexerState.equals(LexerState.ELEMENTS) && lastLexerState.equals(LexerState.ARRAY_VALUE)
-                || currentLexerState.equals(LexerState.ARRAY_CLOSE) && lastLexerState.equals(LexerState.ARRAY_VALUE)
-                ) {
+                || currentLexerState.equals(LexerState.ARRAY_CLOSE) && lastLexerState.equals(LexerState.ARRAY_VALUE)) {
+                
                 result = LexerToken.ARR_VAL + extractor.getSubString(json).trim() + LexerToken.ARR_VAL_END;
-                tokens.add(LexerToken.ARR_VAL.toString());
+                tokens.add(LexerToken.ARR_VAL.name());
                 tokens.add( extractor.getSubString(json).trim().replace("\"",""));
-                tokens.add(LexerToken.ARR_VAL_END.toString());
+                tokens.add(LexerToken.ARR_VAL_END.name());
             } else {
                 result = LexerToken.KEY + " " + extractor.getSubString(json).trim();
-                tokens.add(LexerToken.KEY.toString());
+                tokens.add(LexerToken.KEY.name());
                 tokens.add( extractor.getSubString(json).trim());
             }
             extractor.reset();
@@ -123,11 +122,12 @@ public class JsonLexer {
             || currentLexerState.equals(LexerState.PAIR) && lastLexerState.equals(LexerState.ARRAY_VALUE)) {
             extractor.setY(idx);
             result = LexerToken.VAL + " " + extractor.getSubString(json).trim() + " " + LexerToken.VAL_END;
-            tokens.add(LexerToken.VAL.toString());
+            tokens.add(LexerToken.VAL.name());
             tokens.add( extractor.getSubString(json).trim());
-            tokens.add(LexerToken.VAL_END.toString());
+            tokens.add(LexerToken.VAL_END.name());
             extractor.reset();
         }
+        
         return result + " ";
     }
     
@@ -146,5 +146,4 @@ public class JsonLexer {
             || nextLexerState.equals(LexerState.ELEMENTS) && lastLexerState.equals(LexerState.ARRAY_OPEN)
             || nextLexerState.equals(LexerState.OBJ_OPEN) && lastLexerState.equals(LexerState.PAIR_VALUE_1);
     }
-    
 }
