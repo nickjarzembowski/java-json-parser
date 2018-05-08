@@ -18,14 +18,14 @@ public class ParserTest {
     @Test
     public void parse1() throws Exception {
         JsonTree jsonTree = json.getFromFile("/json/json-1.json");
-        assertTrue(jsonTree.getNode("nums").getIntegerList().containsAll(Arrays.asList(new Integer[]{1,2,3,4,5})));
+        assertTrue(jsonTree.getIntegerList("nums").containsAll(Arrays.asList(new Integer[]{1,2,3,4,5})));
         assertEquals(5, jsonTree.getInt("total"));
     }
     
     @Test
     public void parse2() throws Exception {
         JsonTree jsonTree = json.getFromFile("/json/json-2.json");
-        JsonNode.NodeList nodes = jsonTree.getNode("objs").getNodeList();
+        JsonNode.NodeList nodes = jsonTree.getNodeList("objs");
         assertEquals("item1", nodes.getNode(0).getKey());
         assertEquals(1, nodes.getNode(0).getInt("item1"));
         assertEquals("item2", nodes.getNode(1).getKey());
@@ -36,9 +36,9 @@ public class ParserTest {
     @Test
     public void parse3() throws Exception {
         JsonTree jsonTree = json.getFromFile("/json/json-3.json");
-        assertEquals(1, jsonTree.getNode("nestedlist").getNodeList().getNode(0).getNodeList().getNode(0).getNodeList().getInt(0));
-        assertEquals("item", jsonTree.getNode("nestedlist").getNodeList().getNode(0).getNodeList().getNode(0).getNodeList().getNode(1).getKey());
-        assertEquals(1, jsonTree.getNode("nestedlist").getNodeList().getNode(0).getNodeList().getNode(0).getNodeList().getNode(1).getInt("item"));
+        assertEquals(1, jsonTree.getNodeList("nestedlist").getNodeList(0).getNodeList(0).getInt(0));
+        assertEquals("item", jsonTree.getNodeList("nestedlist").getNodeList(0).getNodeList(0).getNode(1).getKey());
+        assertEquals(1, jsonTree.getNodeList("nestedlist").getNodeList(0).getNodeList(0).getNode(1).getInt("item"));
     }
     
     @Test
@@ -88,28 +88,28 @@ public class ParserTest {
         assertEquals(-40.151031,jsonTree.getDouble("latitude"));
         assertEquals(1.240083,jsonTree.getDouble("longitude"));
         
-        assertEquals("sit",jsonTree.getNode("tags").getStringList().get(0));
-        assertEquals("enim",jsonTree.getNode("tags").getStringList().get(1));
-        assertEquals("consequat",jsonTree.getNode("tags").getStringList().get(2));
-        assertEquals("voluptate",jsonTree.getNode("tags").getStringList().get(3));
-        assertEquals("ex",jsonTree.getNode("tags").getStringList().get(4));
-        assertEquals("ut",jsonTree.getNode("tags").getStringList().get(5));
-        assertEquals("ullamco",jsonTree.getNode("tags").getStringList().get(6));
+        assertEquals("sit",jsonTree.getStringList("tags").get(0));
+        assertEquals("enim",jsonTree.getStringList("tags").get(1));
+        assertEquals("consequat",jsonTree.getStringList("tags").get(2));
+        assertEquals("voluptate",jsonTree.getStringList("tags").get(3));
+        assertEquals("ex",jsonTree.getStringList("tags").get(4));
+        assertEquals("ut",jsonTree.getStringList("tags").get(5));
+        assertEquals("ullamco",jsonTree.getStringList("tags").get(6));
         
-        assertTrue(jsonTree.getNode("friends").getNodeList().getNode(0).containsKey("id"));
-        assertTrue(jsonTree.getNode("friends").getNodeList().getNode(0).containsKey("name"));
-        assertEquals(2, jsonTree.getNode("friends").getNodeList().getNode(0).getTotalKeys());
-        assertEquals(0, jsonTree.getNode("friends").getNodeList().getNode(0).getInt("id"));
-        assertEquals("Sykes Bird", jsonTree.getNode("friends").getNodeList().getNode(0).getString("name"));
-        assertTrue(jsonTree.getNode("friends").getNodeList().getNode(1).containsKey("id"));
-        assertTrue(jsonTree.getNode("friends").getNodeList().getNode(1).containsKey("name"));
-        assertEquals(1, jsonTree.getNode("friends").getNodeList().getNode(1).getInt("id"));
-        assertEquals("Barnett Wilkins", jsonTree.getNode("friends").getNodeList().getNode(1).getString("name"));
-        assertTrue(jsonTree.getNode("friends").getNodeList().getNode(2).containsKey("id"));
-        assertTrue(jsonTree.getNode("friends").getNodeList().getNode(2).containsKey("name"));
-        assertEquals(2, jsonTree.getNode("friends").getNodeList().getNode(2).getInt("id"));
+        assertTrue(jsonTree.getNodeList("friends").getNode(0).containsKey("id"));
+        assertTrue(jsonTree.getNodeList("friends").getNode(0).containsKey("name"));
+        assertEquals(2, jsonTree.getNodeList("friends").getNode(0).getTotalKeys());
+        assertEquals(0, jsonTree.getNodeList("friends").getNode(0).getInt("id"));
+        assertEquals("Sykes Bird", jsonTree.getNodeList("friends").getNode(0).getString("name"));
+        assertTrue(jsonTree.getNodeList("friends").getNode(1).containsKey("id"));
+        assertTrue(jsonTree.getNodeList("friends").getNode(1).containsKey("name"));
+        assertEquals(1, jsonTree.getNodeList("friends").getNode(1).getInt("id"));
+        assertEquals("Barnett Wilkins", jsonTree.getNodeList("friends").getNode(1).getString("name"));
+        assertTrue(jsonTree.getNodeList("friends").getNode(2).containsKey("id"));
+        assertTrue(jsonTree.getNodeList("friends").getNode(2).containsKey("name"));
+        assertEquals(2, jsonTree.getNodeList("friends").getNode(2).getInt("id"));
+        assertEquals("Erin Mendoza", jsonTree.getNodeList("friends").getNode(2).getString("name"));
         
-        assertEquals("Erin Mendoza", jsonTree.getNode("friends").getNodeList().getNode(2).getString("name"));
         assertEquals("Hello, Raymond Leblanc! You have 2 unread messages.",jsonTree.getString("greeting"));
         assertEquals("strawberry",jsonTree.getString("favoriteFruit"));
     }

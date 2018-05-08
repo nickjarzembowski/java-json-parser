@@ -120,6 +120,10 @@ public class JsonNode {
         return l;
     }
     
+    public List<String> getStringList(String key) {
+        return getNode(key).getStringList();
+    }
+    
     public List<String> getStringList() {
         List<String> l = new ArrayList();
         list.forEach(s -> l.add((String)s));
@@ -149,6 +153,9 @@ public class JsonNode {
         }
         public JsonNode getNode(int index) {
             return (JsonNode) list.get(index);
+        }
+        public NodeList getNodeList(int index) {
+            return getNode(index).getNodeList();
         }
         public int getInt(int i) {
             return Integer.valueOf(list.get(i).toString());
