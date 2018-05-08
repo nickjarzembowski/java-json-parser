@@ -2,7 +2,7 @@
 
 A fast and simple json parser for Java. 
 
-### How to
+## Examples
 
 Create the parser
 
@@ -13,7 +13,7 @@ private json.Json jsonParser = new json.Json();
 Parse and access fields:
 
 ```
-Json json = jsonParser.getFromString("{\"root\": {\"firstname\": \"nick\", \"height\": 179, \"occupation\":{ \"role\":\"dev\" } } }");
+Json json = jsonParser.getFromString("{\"root\": {\"name\": \"nick\", \"height\": 179, \"occupation\":{ \"role\":\"dev\" } } }");
 json.getNode("root").getString("name"); // nick
 json.getNode("root").getInt("height"); // 179
 json.getNode("root").getNode("occupation").getString("role"); // dev
@@ -43,3 +43,7 @@ String data = "{
 Json json = jsonParser.getFromString(data);
 json.getStringList("tags").get(0)); // "sit"
 ```
+
+## Contributing
+
+Open to pull requests.
