@@ -22,7 +22,7 @@ json.getNode("root").getNode("occupation").getString("role"); // dev
 Get values from an array:
 
 ```
-Json json = jsonParser.getFromString("[ {\"total\": \"9.99\"} ]");
+Json json = jsonParser.getFromString("[ {\"total\": 9.99 } ]");
 json.getNodeList().getNode(0).getDouble("total") // 9.99
 ```
 
@@ -41,7 +41,7 @@ String data = "{
     ]
 }"
 Json json = jsonParser.getFromString(data);
-json.getStringList("tags").get(0)); // "sit"
+json.getStringList("tags").get(0); // "sit"
 ```
 
 ## Contributing

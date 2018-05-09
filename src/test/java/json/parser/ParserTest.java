@@ -140,4 +140,9 @@ public class ParserTest {
         assertEquals("nick",json.getNodeList().getNode(0).getString("name"));
     }
     
+    @Test
+    public void t() {
+        Json json = this.json.getFromString("[ {\"total\": 9.99 } ]");
+        System.out.println(json.getNodeList().getNode(0).getDouble("total")); // 9.99
+    }
 }
